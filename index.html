@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Database Management UI</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+            text-align: left;
+        }
+        th, td {
+            padding: 10px;
+        }
+    </style>
+	
+</head>
+<body>
+	
+<div id="createTableForm">
+    <input type="text" id="newTableName" placeholder="New Table Name">
+    <div id="columnsContainer">
+        <div class="columnSpec">
+            <input type="text" placeholder="Column Name">
+            <select>
+                <option value="INT">INT</option>
+                <option value="VARCHAR">VARCHAR</option>
+                <!-- Add other data types as needed -->
+            </select>
+            <input type="number" placeholder="Size (optional)">
+            <button onclick="removeColumnSpec(this)">Remove</button>
+        </div>
+    </div>
+    <button onclick="addColumnSpec()">Add Column</button>
+    <button onclick="createTable()">Create Table</button>
+</div>
+
+	
+
+
+
+
+    <h1>Database Tables</h1>
+    <div id="tableList"></div>
+	
+	<div>
+    <h3>Add Column</h3>
+    <input type="text" id="tableNameForColumn" placeholder="Table Name" disabled>
+    <input type="text" id="columnName" placeholder="Column Name">
+	<input type="number" id="columnSize" placeholder="Column Size (Optional)">
+    <select id="columnType">
+        <option value="INTEGER">INTEGER</option>
+        <option value="TEXT">TEXT</option>
+        <option value="REAL">REAL</option>
+        <option value="BLOB">BLOB</option>
+        <option value="DATE">DATE</option>
+        <option value="BOOLEAN">BOOLEAN</option>
+        <!-- Add more data types as needed -->
+    </select>
+    <button onclick="addColumn()">Add Column</button>
+</div>
+<div>
+    <h3>Add Row to Table</h3>
+    <input type="text" id="tableNameForRow" placeholder="Table Name" disabled>
+    <form id="newRowForm"></form>
+    <button onclick="addRow()">Add Row</button>
+</div>
+	
+	
+    <div id="tableData"></div>
+
+<button>Update</button>
+  <script src="script.js"></script>
+</body>
+</html>
