@@ -44,3 +44,23 @@ reader.onload = function(e) {
     displayChartTypeButtons(recommendations, data);
 };
 
+
+function analyzeDataStructure(data) {
+    const columnTypes = {};
+    if (data.length === 0) return columnTypes;
+
+    // Assume all columns are numerical initially
+    const columns = Object.keys(data[0]);
+    columns.forEach(column => columnTypes[column] = 'numerical');
+
+    data.forEach(row => {
+        columns.forEach(column => {
+            if (isNaN(parseFloat(row[column])) || row[column] === "") {
+                columnTypes[column] = 'categorical';
+            }
+        });
+    });
+
+    return columnTypes;
+}
+
