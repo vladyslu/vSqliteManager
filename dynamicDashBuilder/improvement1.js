@@ -1,3 +1,37 @@
+
+//gridstuck start
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/4.3.1/gridstack.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/4.3.1/gridstack.all.js"></script>
+</head>
+<body>
+
+<div class="grid-stack">
+    <div class="grid-stack-item" data-gs-width="4" data-gs-height="2" data-gs-x="0" data-gs-y="0">
+        <div class="grid-stack-item-content">Item 1</div>
+    </div>
+    <div class="grid-stack-item" data-gs-width="4" data-gs-height="2" data-gs-x="4" data-gs-y="0">
+        <div class="grid-stack-item-content">Item 2</div>
+    </div>
+    <!-- Add more grid items as needed -->
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var grid = GridStack.init();
+    });
+</script>
+
+</body>
+</html>
+
+//gridstuck finish
+
+
+
+
 document.querySelectorAll('.resize-handle').forEach(handle => {
   handle.addEventListener('mousedown', function(e) {
     e.preventDefault(); // Prevent any default action or text selection
