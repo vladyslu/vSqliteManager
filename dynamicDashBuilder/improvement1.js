@@ -63,13 +63,63 @@ function createButton(text, onClick) {
 
 function renderChart(chartType, data, columnName) {
     const myChart = echarts.init(document.getElementById('chartContainer'));
-    const option = {
-        // Define chart options here based on chartType and data
-        // This is a placeholder; you'll need to customize this part
-    };
+    let option;
+
+    if (chartType === 'line') {
+        // Line Chart for numerical data
+        const xAxisData = data.map((item, index) => index); // Assuming sequential x-axis if specific x-axis data isn't provided
+        const seriesData = data.map(item => parseFloat(item[columnName]));
+
+        option = {
+            tooltip: {
+                trigger: 'axis'
+            },
+            xAxis: {
+                type: 'category',
+                data: xAxisData
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: seriesData,
+                type: 'line',
+                smooth: true
+            }]
+        };
+    } else if (chartType === 'bar') {
+        // Bar Chart for categorical data
+        const categoryCounts = data.reduce((acc, item) => {
+            const category = item[columnName];
+            acc[category] = (acc[category] || 0) + 1;
+            return acc;
+        }, {});
+        
+        const categories = Object.keys(categoryCounts);
+        const seriesData = categories.map(category => categoryCounts[category]);
+
+        option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+            },
+            xAxis: {
+                type: 'category',
+                data: categories
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: seriesData,
+                type: 'bar'
+            }]
+        };
+    }
+
     myChart.setOption(option);
-    console.log(`Rendering a ${chartType} using column: ${columnName}`, data);
 }
+
 
 // Placeholder for actual rendering logic
 // You'll need to implement this based on the specific requirements of your charts and data
