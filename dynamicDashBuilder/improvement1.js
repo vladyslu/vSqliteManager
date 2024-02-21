@@ -1,30 +1,49 @@
-interact('.item').resizable({
-  edges: { left: true, right: true, bottom: true, top: true },
-  listeners: {
-    move(event) {
-      let { x, y } = event.target.dataset;
+.item {
+  position: relative;
+  /* Other styles */
+}
 
-      x = (parseFloat(x) || 0) + event.deltaRect.left;
-      y = (parseFloat(y) || 0) + event.deltaRect.top;
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: red;
+  cursor: se-resize;
+}
 
-      Object.assign(event.target.style, {
-        width: `${event.rect.width}px`,
-        height: `${event.rect.height}px`,
-        transform: `translate(${x}px, ${y}px)`
-      });
 
-      // Update the dataset values
-      event.target.dataset.x = x;
-      event.target.dataset.y = y;
 
-      // Tell Muuri to refresh the layout
-      grid.refreshItems().layout();
-    }
+
+
+
+document.querySelectorAll('.resize-handle').forEach(handle => {
+  let startX, startY, startWidth, startHeight;
+
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = parseInt(document.defaultView.getComputedStyle(handle.parentNode).width, 10);
+    startHeight = parseInt(document.defaultView.getComputedStyle(handle.parentNode).height, 10);
+
+    document.documentElement.addEventListener('mousemove', doDrag, false);
+    document.documentElement.addEventListener('mouseup', stopDrag, false);
+  });
+
+  function doDrag(e) {
+    handle.parentNode.style.width = startWidth + e.clientX - startX + 'px';
+    handle.parentNode.style.height = startHeight + e.clientY - startY + 'px';
+    // Refresh Muuri layout after resizing
+    grid.refreshItems().layout();
   }
-})
-.margin(10) // Optional: Add margin for easier resizing
-.inertia(true); // Optional: Adds inertia to the resizing
 
+  function stopDrag() {
+    document.documentElement.removeEventListener('mousemove', doDrag, false);
+    document.documentElement.removeEventListener('mouseup', stopDrag, false);
+  }
+});
 
 
 
