@@ -1,51 +1,28 @@
-.item {
-  position: relative;
-  /* Other styles */
-}
-
-.resize-handle {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
-  background: red;
-  cursor: se-resize;
-}
-
-
-
-
-
-
 document.querySelectorAll('.resize-handle').forEach(handle => {
-  let startX, startY, startWidth, startHeight;
+  handle.addEventListener('mousedown', function(e) {
+    e.preventDefault(); // Prevent any default action or text selection
+    const itemElement = this.parentNode; // Assuming the item is the direct parent
+    let startX = e.clientX;
+    let startY = e.clientY;
+    let startWidth = parseInt(window.getComputedStyle(itemElement).width, 10);
+    let startHeight = parseInt(window.getComputedStyle(itemElement).height, 10);
 
-  handle.addEventListener('mousedown', e => {
-    e.preventDefault();
-    startX = e.clientX;
-    startY = e.clientY;
-    startWidth = parseInt(document.defaultView.getComputedStyle(handle.parentNode).width, 10);
-    startHeight = parseInt(document.defaultView.getComputedStyle(handle.parentNode).height, 10);
+    function resize(e) {
+      itemElement.style.width = startWidth + e.clientX - startX + 'px';
+      itemElement.style.height = startHeight + e.clientY - startY + 'px';
+      // Optionally, refresh Muuri layout here if the grid layout needs to be updated
+      grid.refreshItems().layout();
+    }
 
-    document.documentElement.addEventListener('mousemove', doDrag, false);
-    document.documentElement.addEventListener('mouseup', stopDrag, false);
+    function stopResize() {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResize);
+    }
+
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResize);
   });
-
-  function doDrag(e) {
-    handle.parentNode.style.width = startWidth + e.clientX - startX + 'px';
-    handle.parentNode.style.height = startHeight + e.clientY - startY + 'px';
-    // Refresh Muuri layout after resizing
-    grid.refreshItems().layout();
-  }
-
-  function stopDrag() {
-    document.documentElement.removeEventListener('mousemove', doDrag, false);
-    document.documentElement.removeEventListener('mouseup', stopDrag, false);
-  }
 });
-
-
 
 document.getElementById('fileInput').addEventListener('change', function(event) {
     const file = event.target.files[0];
