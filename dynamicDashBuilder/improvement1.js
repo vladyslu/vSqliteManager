@@ -121,5 +121,87 @@ function renderChart(chartType, data, columnName) {
 }
 
 
+
+
+
+function displayChartTypeButtons(columnTypes, data) {
+    const container = document.getElementById('chartTypeButtons');
+    container.innerHTML = '';
+
+    // Line Chart for numerical data
+    if (columnTypes.numerical.length > 0) {
+        createButton('Line Chart', () => renderChart('line', data, columnTypes.numerical[0]));
+    }
+    // Bar Chart for categorical data
+    if (columnTypes.categorical.length > 0) {
+        createButton('Bar Chart', () => renderChart('bar', data, columnTypes.categorical[0]));
+    }
+    // Scatter Plot for datasets with at least two numerical columns
+    if (columnTypes.numerical.length > 1) {
+        createButton('Scatter Plot', () => renderChart('scatter', data, columnTypes.numerical));
+    }
+    // Pie Chart for categorical data
+    if (columnTypes.categorical.length > 0) {
+        createButton('Pie Chart', () => renderChart('pie', data, columnTypes.categorical[0]));
+    }
+}
+
+
+
+function renderChart(chartType, data, columnName) {
+    const myChart = echarts.init(document.getElementById('chartContainer'));
+    let option = {};
+
+    switch (chartType) {
+        case 'line':
+            // Line chart configuration (as previously defined)
+            break;
+        case 'bar':
+            // Bar chart configuration (as previously defined)
+            break;
+        case 'scatter':
+            // Scatter plot configuration
+            const xAxisData = data.map(item => parseFloat(item[columnName[0]]));
+            const yAxisData = data.map(item => parseFloat(item[columnName[1]]));
+            option = {
+                tooltip: { trigger: 'item' },
+                xAxis: { type: 'value' },
+                yAxis: { type: 'value' },
+                series: [{ data: xAxisData.map((x, i) => [x, yAxisData[i]]), type: 'scatter' }]
+            };
+            break;
+        case 'pie':
+            // Pie chart configuration
+            const categoryCounts = data.reduce((acc, item) => {
+                const category = item[columnName];
+                acc[category] = (acc[category] || 0) + 1;
+                return acc;
+            }, {});
+            const seriesData = Object.keys(categoryCounts).map(key => ({ value: categoryCounts[key], name: key }));
+            option = {
+                tooltip: { trigger: 'item' },
+                series: [{
+                    type: 'pie',
+                    radius: '50%',
+                    data: seriesData,
+                    emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
+                }]
+            };
+            break;
+    }
+
+    myChart.setOption(option);
+}
+
+
+
+
+
+
+
+
+
+
+
 // Placeholder for actual rendering logic
 // You'll need to implement this based on the specific requirements of your charts and data
