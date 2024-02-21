@@ -1,3 +1,100 @@
+function renderChart(chartType, data, columnNames) {
+    const myChart = echarts.init(document.getElementById('chartContainer'));
+    let option = {};
+
+    switch (chartType) {
+        case 'line':
+        case 'scatter':
+            // Assuming the first column is for the X-axis and the second for the Y-axis in scatter plot
+            const xAxisLabel = chartType === 'line' ? 'Index' : columnNames[0];
+            const yAxisLabel = chartType === 'line' ? columnNames[0] : columnNames[1];
+            option = {
+                xAxis: {
+                    type: 'category',
+                    data: chartType === 'line' ? data.map((_, index) => index.toString()) : data.map(item => item[columnNames[0]]),
+                    name: xAxisLabel
+                },
+                yAxis: {
+                    type: 'value',
+                    name: yAxisLabel
+                },
+                series: [{
+                    data: chartType === 'line' ? data.map(item => item[columnNames[0]]) : data.map(item => [item[columnNames[0]], item[columnNames[1]]]),
+                    type: chartType
+                }]
+            };
+            break;
+        case 'bar':
+            // For bar charts, using the first categorical column for X-axis and aggregating values for Y-axis
+            option = {
+                xAxis: {
+                    type: 'category',
+                    data: data.map(item => item[columnNames[0]]),
+                    name: columnNames[0]
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Count'
+                },
+                series: [{
+                    data: data.reduce((acc, item) => {
+                        const key = item[columnNames[0]];
+                        if (!acc[key]) acc[key] = 0;
+                        acc[key] += 1;
+                        return acc;
+                    }, []),
+                    type: 'bar'
+                }]
+            };
+            break;
+        case 'pie':
+            // For pie charts, the first categorical column is used for segments
+            option = {
+                series: [{
+                    type: 'pie',
+                    radius: '50%',
+                    data: Object.entries(data.reduce((acc, item) => {
+                        const key = item[columnNames[0]];
+                        acc[key] = (acc[key] || 0) + 1;
+                        return acc;
+                    }, {})).map(([name, value]) => ({ name, value })),
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            break;
+        case 'heatmap':
+            // Example simplified for demo
+            break;
+        case 'radar':
+            const radarData = columnNames.slice(0, 5).map((name, i) => ({
+                name,
+                value: data.map(item => parseFloat(item[name])).filter(Boolean).reduce((a, b) => a + b, 0) / data.length
+            }));
+
+            option = {
+                radar: {
+                    indicator: radarData.map(d => ({ name: d.name, max: Math.max(...data.map(item => parseFloat(item[d.name]))) }))
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{ value: radarData.map(d => d.value) }]
+                }]
+            };
+            break;
+    }
+
+    myChart.setOption(option);
+}
+
+
+
+
 
 //gridstuck start
 <!DOCTYPE html>
