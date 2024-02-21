@@ -1,66 +1,75 @@
-// Example function to analyze data and recommend chart types
-function recommendChartTypes(data, columnTypes) {
-    const recommendations = new Set(); // Use a Set to avoid duplicate recommendations
-
-    // Simple heuristic for recommendation
-    if (columnTypes['numerical']) {
-        recommendations.add('line');
-        recommendations.add('scatter');
+document.getElementById('fileInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const data = parseCSV(content);
+            const columnTypes = analyzeDataStructure(data);
+            displayChartTypeButtons(columnTypes, data);
+        };
+        reader.readAsText(file);
     }
-    if (columnTypes['categorical']) {
-        recommendations.add('bar');
-        recommendations.add('pie');
-    }
+});
 
-    return Array.from(recommendations);
-}
-
-// Function to display recommended chart types as buttons
-function displayChartTypeButtons(recommendations, data) {
-    const container = document.getElementById('chartTypeButtons');
-    container.innerHTML = ''; // Clear previous buttons
-
-    recommendations.forEach(type => {
-        const button = document.createElement('button');
-        button.textContent = `Create ${type.charAt(0).toUpperCase() + type.slice(1)} Chart`;
-        button.onclick = () => renderChart(type, data);
-        container.appendChild(button);
+function parseCSV(csvContent) {
+    const lines = csvContent.trim().split('\n').map(line => line.split(','));
+    const headers = lines.shift();
+    return lines.map(line => {
+        const obj = {};
+        line.forEach((value, index) => {
+            obj[headers[index]] = value;
+        });
+        return obj;
     });
 }
 
-// Function to render a chart based on the selected type
-function renderChart(type, data) {
-    // Placeholder for chart rendering logic
-    // You would use ECharts API here to create the appropriate chart based on 'type' and 'data'
-    console.log(`Rendering a ${type} chart`, data);
-}
-
-// Example usage within the file reading logic
-reader.onload = function(e) {
-    const content = e.target.result;
-    const data = parseCSV(content); // Assuming CSV for simplicity
-    const columnTypes = analyzeDataStructure(data);
-    const recommendations = recommendChartTypes(data, columnTypes);
-    displayChartTypeButtons(recommendations, data);
-};
-
-
 function analyzeDataStructure(data) {
-    const columnTypes = {};
+    const columnTypes = { numerical: [], categorical: [] };
     if (data.length === 0) return columnTypes;
 
-    // Assume all columns are numerical initially
     const columns = Object.keys(data[0]);
-    columns.forEach(column => columnTypes[column] = 'numerical');
-
-    data.forEach(row => {
-        columns.forEach(column => {
-            if (isNaN(parseFloat(row[column])) || row[column] === "") {
-                columnTypes[column] = 'categorical';
-            }
-        });
+    columns.forEach(column => {
+        let isNumerical = data.every(row => !isNaN(parseFloat(row[column])) && row[column].trim() !== "");
+        if (isNumerical) {
+            columnTypes.numerical.push(column);
+        } else {
+            columnTypes.categorical.push(column);
+        }
     });
 
     return columnTypes;
 }
 
+function displayChartTypeButtons(columnTypes, data) {
+    const container = document.getElementById('chartTypeButtons');
+    container.innerHTML = '';
+
+    // Example: Adjust based on your needs and available chart types
+    if (columnTypes.numerical.length > 0) {
+        createButton('Line Chart', () => renderChart('line', data, columnTypes.numerical[0]));
+    }
+    if (columnTypes.categorical.length > 0) {
+        createButton('Bar Chart', () => renderChart('bar', data, columnTypes.categorical[0]));
+    }
+}
+
+function createButton(text, onClick) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.onclick = onClick;
+    document.getElementById('chartTypeButtons').appendChild(button);
+}
+
+function renderChart(chartType, data, columnName) {
+    const myChart = echarts.init(document.getElementById('chartContainer'));
+    const option = {
+        // Define chart options here based on chartType and data
+        // This is a placeholder; you'll need to customize this part
+    };
+    myChart.setOption(option);
+    console.log(`Rendering a ${chartType} using column: ${columnName}`, data);
+}
+
+// Placeholder for actual rendering logic
+// You'll need to implement this based on the specific requirements of your charts and data
