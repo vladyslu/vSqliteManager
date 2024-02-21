@@ -1,3 +1,33 @@
+interact('.item').resizable({
+  edges: { left: true, right: true, bottom: true, top: true },
+  listeners: {
+    move(event) {
+      let { x, y } = event.target.dataset;
+
+      x = (parseFloat(x) || 0) + event.deltaRect.left;
+      y = (parseFloat(y) || 0) + event.deltaRect.top;
+
+      Object.assign(event.target.style, {
+        width: `${event.rect.width}px`,
+        height: `${event.rect.height}px`,
+        transform: `translate(${x}px, ${y}px)`
+      });
+
+      // Update the dataset values
+      event.target.dataset.x = x;
+      event.target.dataset.y = y;
+
+      // Tell Muuri to refresh the layout
+      grid.refreshItems().layout();
+    }
+  }
+})
+.margin(10) // Optional: Add margin for easier resizing
+.inertia(true); // Optional: Adds inertia to the resizing
+
+
+
+
 document.getElementById('fileInput').addEventListener('change', function(event) {
     const file = event.target.files[0];
     if (file) {
