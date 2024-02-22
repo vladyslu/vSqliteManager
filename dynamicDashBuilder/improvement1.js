@@ -1,92 +1,77 @@
-function renderChart(chartType, data, columnNames) {
+function renderChart(chartType, data, columnName) {
     const myChart = echarts.init(document.getElementById('chartContainer'));
     let option = {};
 
-    switch (chartType) {
-        case 'line':
-        case 'scatter':
-            // Assuming the first column is for the X-axis and the second for the Y-axis in scatter plot
-            const xAxisLabel = chartType === 'line' ? 'Index' : columnNames[0];
-            const yAxisLabel = chartType === 'line' ? columnNames[0] : columnNames[1];
-            option = {
-                xAxis: {
-                    type: 'category',
-                    data: chartType === 'line' ? data.map((_, index) => index.toString()) : data.map(item => item[columnNames[0]]),
-                    name: xAxisLabel
-                },
-                yAxis: {
-                    type: 'value',
-                    name: yAxisLabel
-                },
-                series: [{
-                    data: chartType === 'line' ? data.map(item => item[columnNames[0]]) : data.map(item => [item[columnNames[0]], item[columnNames[1]]]),
-                    type: chartType
-                }]
-            };
-            break;
-        case 'bar':
-            // For bar charts, using the first categorical column for X-axis and aggregating values for Y-axis
-            option = {
-                xAxis: {
-                    type: 'category',
-                    data: data.map(item => item[columnNames[0]]),
-                    name: columnNames[0]
-                },
-                yAxis: {
-                    type: 'value',
-                    name: 'Count'
-                },
-                series: [{
-                    data: data.reduce((acc, item) => {
-                        const key = item[columnNames[0]];
-                        if (!acc[key]) acc[key] = 0;
-                        acc[key] += 1;
-                        return acc;
-                    }, []),
-                    type: 'bar'
-                }]
-            };
-            break;
-        case 'pie':
-            // For pie charts, the first categorical column is used for segments
-            option = {
-                series: [{
-                    type: 'pie',
-                    radius: '50%',
-                    data: Object.entries(data.reduce((acc, item) => {
-                        const key = item[columnNames[0]];
-                        acc[key] = (acc[key] || 0) + 1;
-                        return acc;
-                    }, {})).map(([name, value]) => ({ name, value })),
-                    emphasis: {
-                        itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
-                        }
-                    }
-                }]
-            };
-            break;
-        case 'heatmap':
-            // Example simplified for demo
-            break;
-        case 'radar':
-            const radarData = columnNames.slice(0, 5).map((name, i) => ({
-                name,
-                value: data.map(item => parseFloat(item[name])).filter(Boolean).reduce((a, b) => a + b, 0) / data.length
-            }));
+    if (chartType === 'line') {
+        // Assuming the first column is for the X-axis in case of a scatter plot,
+        // and for the Y-axis in case of a line chart if the X-axis data isn't explicitly provided.
+        const xAxisData = data.map((_, index) => index.toString()); // Use index as X-axis labels for line chart
+        const seriesData = data.map(item => parseFloat(item[columnName]));
 
-            option = {
-                radar: {
-                    indicator: radarData.map(d => ({ name: d.name, max: Math.max(...data.map(item => parseFloat(item[d.name]))) }))
-                },
-                series: [{
-                    type: 'radar',
-                    data: [{ value: radarData.map(d => d.value) }]
-                }]
-            };
-            break;
+        option = {
+            title: {
+                text: `Line Chart of ${columnName}`,
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            xAxis: {
+                type: 'category',
+                data: xAxisData,
+                name: chartType === 'line' ? 'Index' : columnName
+            },
+            yAxis: {
+                type: 'value',
+                name: columnName
+            },
+            series: [{
+                data: seriesData,
+                type: 'line',
+                smooth: true
+            }]
+        };
+    } else if (chartType === 'bar') {
+        // Improved handling for both categorical and numerical data
+        let categories;
+        let seriesData;
+        if (typeof data[0][columnName] === 'string') {
+            const categoryCounts = data.reduce((acc, item) => {
+                const category = item[columnName];
+                acc[category] = (acc[category] || 0) + 1;
+                return acc;
+            }, {});
+            categories = Object.keys(categoryCounts);
+            seriesData = categories.map(category => categoryCounts[category]);
+        } else {
+            // Assuming numerical data needs to be binned or directly used
+            categories = data.map((_, index) => `Data ${index + 1}`);
+            seriesData = data.map(item => parseFloat(item[columnName]));
+        }
+
+        option = {
+            title: {
+                text: `Bar Chart of ${columnName}`,
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' }
+            },
+            xAxis: {
+                type: 'category',
+                data: categories,
+                name: 'Category'
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Count/Value'
+            },
+            series: [{
+                data: seriesData,
+                type: 'bar'
+            }]
+        };
     }
 
     myChart.setOption(option);
