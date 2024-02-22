@@ -1,82 +1,55 @@
-function renderChart(chartType, data, columnName) {
+function renderChart(chartType, data, columnNames) {
     const myChart = echarts.init(document.getElementById('chartContainer'));
     let option = {};
 
-    if (chartType === 'line') {
-        // Assuming the first column is for the X-axis in case of a scatter plot,
-        // and for the Y-axis in case of a line chart if the X-axis data isn't explicitly provided.
-        const xAxisData = data.map((_, index) => index.toString()); // Use index as X-axis labels for line chart
-        const seriesData = data.map(item => parseFloat(item[columnName]));
+    switch (chartType) {
+        case 'line':
+            // Selecting the first numerical column for demonstration purposes
+            const numericalColumnName = columnNames.find(name => !isNaN(data[0][name]));
+            const seriesData = data.map(item => parseFloat(item[numericalColumnName])).filter(item => !isNaN(item));
+            const xAxisData = seriesData.map((_, index) => index);
 
-        option = {
-            title: {
-                text: `Line Chart of ${columnName}`,
-                left: 'center'
-            },
-            tooltip: {
-                trigger: 'axis'
-            },
-            xAxis: {
-                type: 'category',
-                data: xAxisData,
-                name: chartType === 'line' ? 'Index' : columnName
-            },
-            yAxis: {
-                type: 'value',
-                name: columnName
-            },
-            series: [{
-                data: seriesData,
-                type: 'line',
-                smooth: true
-            }]
-        };
-    } else if (chartType === 'bar') {
-        // Improved handling for both categorical and numerical data
-        let categories;
-        let seriesData;
-        if (typeof data[0][columnName] === 'string') {
-            const categoryCounts = data.reduce((acc, item) => {
-                const category = item[columnName];
-                acc[category] = (acc[category] || 0) + 1;
-                return acc;
-            }, {});
-            categories = Object.keys(categoryCounts);
-            seriesData = categories.map(category => categoryCounts[category]);
-        } else {
-            // Assuming numerical data needs to be binned or directly used
-            categories = data.map((_, index) => `Data ${index + 1}`);
-            seriesData = data.map(item => parseFloat(item[columnName]));
-        }
+            option = {
+                title: { text: `Line Chart of ${numericalColumnName}` },
+                tooltip: { trigger: 'axis' },
+                xAxis: { type: 'category', data: xAxisData, name: 'Index' },
+                yAxis: { type: 'value', name: numericalColumnName },
+                series: [{ data: seriesData, type: 'line', smooth: true }]
+            };
+            break;
 
-        option = {
-            title: {
-                text: `Bar Chart of ${columnName}`,
-                left: 'center'
-            },
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'shadow' }
-            },
-            xAxis: {
-                type: 'category',
-                data: categories,
-                name: 'Category'
-            },
-            yAxis: {
-                type: 'value',
-                name: 'Count/Value'
-            },
-            series: [{
-                data: seriesData,
-                type: 'bar'
-            }]
-        };
+        case 'bar':
+            // Handling both categorical and numerical data
+            const columnName = columnNames[0]; // Assuming the first column for simplicity
+            if (isNaN(data[0][columnName])) {
+                // Categorical data: Count occurrences
+                const categoryCounts = data.reduce((acc, item) => {
+                    acc[item[columnName]] = (acc[item[columnName]] || 0) + 1;
+                    return acc;
+                }, {});
+                option = {
+                    title: { text: `Bar Chart of ${columnName}` },
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                    xAxis: { type: 'category', data: Object.keys(categoryCounts), name: columnName },
+                    yAxis: { type: 'value', name: 'Count' },
+                    series: [{ data: Object.values(categoryCounts), type: 'bar' }]
+                };
+            } else {
+                // Numerical data: Display each value
+                const values = data.map(item => parseFloat(item[columnName])).filter(item => !isNaN(item));
+                option = {
+                    title: { text: `Bar Chart of ${columnName}` },
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                    xAxis: { type: 'category', data: values.map((_, i) => `Index ${i}`), name: 'Index' },
+                    yAxis: { type: 'value', name: columnName },
+                    series: [{ data: values, type: 'bar' }]
+                };
+            }
+            break;
     }
 
     myChart.setOption(option);
 }
-
 
 
 
