@@ -46,20 +46,20 @@ function renderChart(chartType, data, columnNames) {
     myChart.setOption(option);
 }
 
-function getLineChartOption(data, columnNames) {
-    // Assuming the first numerical column for the line chart
-    const numericalColumnName = columnNames.find(name => !isNaN(data[0][name]));
-    const seriesData = data.map(item => parseFloat(item[numericalColumnName])).filter(item => !isNaN(item));
-    const xAxisData = seriesData.map((_, index) => index.toString());
+function getLineChartOption(data, columnName) {
+    // Assuming columnName[0] is categorical (e.g., 'name') and columnName[1] is numerical (e.g., 'age')
+    const xAxisData = data.map(item => item[columnName[0]]);
+    const seriesData = data.map(item => parseFloat(item[columnName[1]]));
 
     return {
-        title: { text: `Line Chart of ${numericalColumnName}` },
+        title: { text: 'Line Chart' },
         tooltip: { trigger: 'axis' },
-        xAxis: { type: 'category', data: xAxisData, name: 'Index' },
-        yAxis: { type: 'value', name: numericalColumnName },
-        series: [{ data: seriesData, type: 'line', smooth: true }]
+        xAxis: { type: 'category', data: xAxisData, name: columnName[0] },
+        yAxis: { type: 'value', name: columnName[1] },
+        series: [{ data: seriesData, type: 'line' }]
     };
 }
+
 
 function getBarChartOption(data, columnNames) {
     const columnName = columnNames[0]; // Assuming the first column for simplicity
